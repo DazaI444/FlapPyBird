@@ -1,27 +1,33 @@
-nome: Construir
+name: Deploy to GitHub Pages
 
-ligado:
-  empurre:
-    ramificações:
-      ¿ ¿ - principais
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '**.py'
 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-trabalhos:
-  construir:
-    nome: Construir e, e analisar
-    runs-on: ubuntu-último
-    
-    passos:
-      ¿ ¿ - usos: ações/checkout@v4
-        com:
-          busca-profundidade: 0  # Clones rasos devem ser desativados para uma melhor relevância da análise
-      ¿ ¿ - usos: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_ TOKEN: ${{ segredos.SONAR_ TOKEN }}
-          SONAR_ HOST_URL: ${{ segredos.SONAR_HOST_URL }}
-      # Se você deseja falhar em seu trabalho quando o Portão da Qualidade estiver vermelho, descomente o
-      # seguindo linhas. Isso normalmente seria usado para falhar uma implantação.
-      # - usa: SonarSource/sonarqube-quality-gate-action@v1
-      # timeout-minutos: 5
-      # env:
-      #SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: make init
+
+      - name: Build web version
+        run: make web-build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
